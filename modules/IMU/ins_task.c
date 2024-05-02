@@ -73,7 +73,8 @@ static void InitQuaternion(float *init_q4)
         init_q4[i + 1] = axis_rot[i] * sinf(angle / 2.0f); // 轴角公式,第三轴为0(没有z轴分量)
 }
 
-attitude_t *INS_Init(void)
+// 初始化
+INS_t *INS_Init(void)
 {
     while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR)
         ;
@@ -100,37 +101,36 @@ attitude_t *INS_Init(void)
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
-    DWT_GetDeltaT64(&INS_DWT_Count);
-    return (attitude_t *)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
+    INS.DGyroLPF = 0.008;
+    DWT_GetDeltaT(&INS_DWT_Count);
+    return &INS; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
 }
 
 /* 注意以1kHz的频率运行此任务 */
 void INS_Task(void)
 {
     static uint32_t count = 0;
-    const float gravity[3] = {0, 0, 9.81f};
+    const float gravity[3] = {0, 0, 9.805f};
 
     dt = DWT_GetDeltaT(&INS_DWT_Count);
     t += dt;
-
+    static float getbmidt, getbmistart;
     // ins update
     if ((count % 1) == 0)
     {
+        getbmistart = DWT_GetTimeline_ms();
         BMI088_Read(&BMI088);
+        getbmidt = DWT_GetTimeline_ms() - getbmistart;
 
         INS.Accel[X] = BMI088.Accel[X];
         INS.Accel[Y] = BMI088.Accel[Y];
         INS.Accel[Z] = BMI088.Accel[Z];
-        INS.Gyro[X]  = BMI088.Gyro[X];
-        INS.Gyro[Y]  = BMI088.Gyro[Y];
-        INS.Gyro[Z]  = BMI088.Gyro[Z];
-
-        // demo function,用于修正安装误差,可以不管,本demo暂时没用
-        IMU_Param_Correction(&IMU_Param, INS.Gyro, INS.Accel);
-
-        // 计算重力加速度矢量和b系的XY两轴的夹角,可用作功能扩展,本demo暂时没用
-        // INS.atanxz = -atan2f(INS.Accel[X], INS.Accel[Z]) * 180 / PI;
-        // INS.atanyz = atan2f(INS.Accel[Y], INS.Accel[Z]) * 180 / PI;
+        INS.dgyro[X] = (BMI088.Gyro[X] - INS.Gyro[X])/ (INS.DGyroLPF + dt) + INS.dgyro[X] * INS.DGyroLPF / (INS.DGyroLPF + dt);
+        INS.dgyro[Y] = (BMI088.Gyro[Y] - INS.Gyro[Y])/ (INS.DGyroLPF + dt) + INS.dgyro[Y] * INS.DGyroLPF / (INS.DGyroLPF + dt);
+        INS.dgyro[Z] = (BMI088.Gyro[Z] - INS.Gyro[Z])/ (INS.DGyroLPF + dt) + INS.dgyro[Z] * INS.DGyroLPF / (INS.DGyroLPF + dt);
+        INS.Gyro[X] = BMI088.Gyro[X];
+        INS.Gyro[Y] = BMI088.Gyro[Y];
+        INS.Gyro[Z] = BMI088.Gyro[Z];
 
         // 核心函数,EKF更新四元数
         IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);
@@ -155,11 +155,9 @@ void INS_Task(void)
         INS.Pitch = QEKF_INS.Pitch;
         INS.Roll = QEKF_INS.Roll;
         INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
-
-        // VisionSetAltitude(-INS.Pitch, INS.YawTotalAngle, INS.Roll);
     }
 
-    // temperature control
+    // temperature control 陀螺仪温度控制
     if ((count % 2) == 0)
     {
         // 500hz

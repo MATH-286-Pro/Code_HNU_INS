@@ -33,7 +33,6 @@
 #include "bsp_init.h"
 #include "bsp_buzzer.h"
 #include "OLED.h"
-#include "OLED_BMP.h"
 #include "ins_task.h"
 
 /* USER CODE END Includes */
@@ -56,7 +55,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-attitude_t *imu_data;
+INS_t *INS_DATA;
 
 /* USER CODE END PV */
 
@@ -121,8 +120,10 @@ int main(void)
   BSPInit();
   OLED_init();
   OLED_clear();
-  OLED_showBMP_gram(BMP_GENSHIN_GRAM);
-  imu_data = INS_Init(); // 初始化IMU 测试 不知道为什么要初始化非常久
+  OLED_show_string(0,0,"Initiating...");
+  OLED_refresh_gram();
+  INS_DATA = INS_Init(); // 初始化IMU 测试 不知道为什么要初始化非常久 将近30秒
+  OLED_clear();
   __enable_irq();
 
   /* USER CODE END 2 */

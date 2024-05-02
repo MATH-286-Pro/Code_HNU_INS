@@ -44,6 +44,7 @@ typedef struct
     float MotionAccel_n[3]; // 绝对系加速度
 
     float AccelLPF; // 加速度低通滤波系数
+    float DGyroLPF;
 
     // bodyframe在绝对系的向量表示
     float xn[3];
@@ -56,6 +57,7 @@ typedef struct
 
     // IMU量测值
     float Gyro[3];  // 角速度
+    float dgyro[3];
     float Accel[3]; // 加速度
     // 位姿
     float Roll;
@@ -80,7 +82,7 @@ typedef struct
  * @brief 初始化惯导解算系统
  *
  */
-attitude_t *INS_Init(void);
+INS_t *INS_Init(void);
 
 /**
  * @brief 此函数放入实时系统中,以1kHz频率运行

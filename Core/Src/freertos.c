@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "OLED.h"
+#include "ins_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -128,9 +129,23 @@ void StartDefaultTask(void const * argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
+
+  extern INS_t *INS_DATA;
+
+  uint8_t i = 0;
+  uint8_t LINE = 4;
+  OLED_show_string(i,0,"YAW"); i++;
+  OLED_show_string(i,0,"PIT"); i++;
+  OLED_show_string(i,0,"ROL"); i++;
+  i = 0;
   /* Infinite loop */
   for(;;)
   {
+    OLED_show_signednum(i, LINE, INS_DATA->Yaw,3); i++;
+    OLED_show_signednum(i, LINE, INS_DATA->Pitch,3); i++;
+    OLED_show_signednum(i, LINE, INS_DATA->Roll,3); i++;
+    OLED_refresh_gram();
+    i=0;
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */

@@ -204,7 +204,7 @@ typedef struct
 typedef struct
 {
 #if defined(CHASSIS_BOARD) || defined(GIMBAL_BOARD) // 非单板的时候底盘还将imu数据回传(若有必要)
-    // attitude_t chassis_imu_data;
+    // INS_t chassis_imu_data;
 #endif
     // 后续增加底盘的真实速度
      float real_vx;
@@ -221,7 +221,7 @@ typedef struct
 /* @todo : 对于平衡底盘,需要不同的反馈数据 */
 typedef struct
 {
-    attitude_t gimbal_imu_data;
+    INS_t gimbal_imu_data;
     uint16_t yaw_motor_single_round_angle;
 } Gimbal_Upload_Data_s;
 
