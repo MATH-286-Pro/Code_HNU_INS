@@ -45,12 +45,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+osThreadId insTaskHandle; // 手动添加
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+void StartINSTASK(void const *argument); // 手动添加
 
 /* USER CODE END FunctionPrototypes */
 
@@ -108,6 +110,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  osThreadDef(instask, StartINSTASK, osPriorityNormal, 0, 1024); // 手动添加
+  insTaskHandle = osThreadCreate(osThread(instask), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -134,5 +138,14 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+void StartINSTASK(void const *argument)
+{
+  while (1)
+  {
+    // 1kHz
+    INS_Task();
+    // VisionSend(); // 解算完成后发送视觉数据
+    osDelay(1);
+  }
+}
 /* USER CODE END Application */

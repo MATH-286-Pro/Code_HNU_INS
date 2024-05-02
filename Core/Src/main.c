@@ -30,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "bsp_init.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,6 +82,16 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  // 关闭中断,防止在初始化过程中发生中断
+  // 请不要在初始化过程中使用中断和延时函数！
+  // 若必须,则只允许使用DWT_Delay()
+  __disable_irq();
+
+  BSPInit();
+
+
+  // 初始化完成,开启中断
+  __enable_irq();
 
   /* USER CODE END Init */
 
@@ -103,6 +113,7 @@ int main(void)
   MX_CAN1_Init();
   MX_CAN2_Init();
   MX_TIM4_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
