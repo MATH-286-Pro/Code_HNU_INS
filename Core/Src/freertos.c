@@ -143,8 +143,7 @@ void StartINSTASK(void const *argument)
   while (1)
   {
     // 1kHz
-    INS_Task();
-    // VisionSend(); // 解算完成后发送视觉数据
+    INS_Task(); // 存在问题，发现 BMI088_Read 函数失效
     osDelay(1);
   }
 }

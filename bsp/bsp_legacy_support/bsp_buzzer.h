@@ -6,5 +6,6 @@
 void BuzzerInit();
 extern void BuzzerOn();
 extern void BuzzerOff(void);
+extern void Buzzer_beep(void);
 
 #endif

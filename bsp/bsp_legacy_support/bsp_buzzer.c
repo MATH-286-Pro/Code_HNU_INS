@@ -31,3 +31,11 @@ void BuzzerOff(void)
     __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_3, 0);
     tmp_warning_level = 0;
 }
+
+void Buzzer_beep(void) {
+    HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);  // 开启TIM4 PWM 蜂鸣器
+    __HAL_TIM_PRESCALER(&htim4, 8);           // 设置TIM4 预分频 调整音色
+    HAL_Delay(50);                            // 延时0.1s
+    HAL_TIM_PWM_Stop(&htim4,TIM_CHANNEL_3);   // 关闭TIM4 PWM
+
+}
